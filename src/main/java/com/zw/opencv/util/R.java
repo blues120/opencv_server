@@ -6,7 +6,8 @@
  * 版权所有，侵权必究！
  */
 
-package utils;
+package com.zw.opencv.util;
+
 
 
 import java.util.HashMap;
@@ -56,6 +57,7 @@ public class R extends HashMap<String, Object> {
 		return new R();
 	}
 
+	@Override
 	public R put(String key, Object value) {
 		super.put(key, value);
 		return this;

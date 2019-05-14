@@ -1,14 +1,7 @@
 package com.zw.opencv.controller;
 
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.springframework.web.bind.annotation.*;
-import utils.R;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.zw.opencv.utils.R;
 
 /**
  * @program: opencv
