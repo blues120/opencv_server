@@ -27,10 +27,11 @@ import com.zw.opencv.generator.service.TApplyRestoreService;
  * @date 2019-05-14 16:28:16
  */
 @RestController
-@RequestMapping("generator/tapplyrestore")
+@RequestMapping("api/applyRestore")
 public class TApplyRestoreController {
     @Autowired
     private TApplyRestoreService tApplyRestoreService;
+
 
     /**
      * 列表

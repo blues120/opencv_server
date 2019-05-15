@@ -27,4 +27,8 @@ public class TUserFileServiceImpl extends ServiceImpl<TUserFileDao, TUserFileEnt
         return new PageUtils(page);
     }
 
+    @Override
+    public Integer statictisInfo(Integer id) {
+        return baseMapper.statictisInfo(id);
+    }
 }

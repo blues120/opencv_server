@@ -16,5 +16,7 @@ import java.util.Map;
 public interface TUserFileService extends IService<TUserFileEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    Integer statictisInfo(Integer id);
 }
 

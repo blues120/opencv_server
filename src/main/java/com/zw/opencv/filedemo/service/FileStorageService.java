@@ -4,6 +4,7 @@ import com.zw.opencv.filedemo.exception.FileStorageException;
 import com.zw.opencv.filedemo.exception.MyFileNotFoundException;
 import com.zw.opencv.filedemo.property.FileStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;

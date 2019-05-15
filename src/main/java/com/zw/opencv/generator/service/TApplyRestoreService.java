@@ -1,6 +1,7 @@
 package com.zw.opencv.generator.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.zw.opencv.generator.entity.ProjectStatus;
 import com.zw.opencv.generator.entity.TApplyRestoreEntity;
 import com.zw.opencv.util.PageUtils;
 
@@ -16,5 +17,7 @@ import java.util.Map;
 public interface TApplyRestoreService extends IService<TApplyRestoreEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    ProjectStatus statictisApplyInfo(Integer id);
 }
 

@@ -1,5 +1,6 @@
 package com.zw.opencv.generator.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
@@ -48,5 +49,10 @@ public class TProjectEntity implements Serializable {
 	 * 
 	 */
 	private String sourceImgUrl;
+
+	@TableField(exist = false)
+	private Integer applyNum;
+	@TableField(exist = false)
+	private Integer authTotal;
 
 }

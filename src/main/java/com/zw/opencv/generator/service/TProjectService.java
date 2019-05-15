@@ -1,9 +1,11 @@
 package com.zw.opencv.generator.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.zw.opencv.generator.entity.ProjectStatus;
 import com.zw.opencv.generator.entity.TProjectEntity;
 import com.zw.opencv.util.PageUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,5 +18,7 @@ import java.util.Map;
 public interface TProjectService extends IService<TProjectEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    List<ProjectStatus> fileList();
 }
 

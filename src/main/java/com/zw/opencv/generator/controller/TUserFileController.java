@@ -27,7 +27,7 @@ import com.zw.opencv.generator.service.TUserFileService;
  * @date 2019-05-14 16:28:16
  */
 @RestController
-@RequestMapping("generator/tuserfile")
+@RequestMapping("api/userFile")
 public class TUserFileController {
     @Autowired
     private TUserFileService tUserFileService;

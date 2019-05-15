@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zw.opencv.generator.dao.TUserFileDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zw.opencv.generator.entity.TUserFileEntity" id="tUserFileMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="authWeight" column="auth_weight"/>
+        <result property="mignotte" column="mignotte"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="imgUrl" column="img_url"/>
+    </resultMap>
+    <select id="statictisInfo" resultType="java.lang.Integer">
+        SELECT ssum(auth_weight)
+        FROM t_user_file WHERE project_id =#{id}
+    </select>
+
+</mapper>

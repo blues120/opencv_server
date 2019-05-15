@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zw.opencv.generator.dao.TProjectDao">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.zw.opencv.generator.entity.TProjectEntity" id="tProjectMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="joinnum" column="joinNum"/>
+        <result property="threshold" column="threshold"/>
+        <result property="createTime" column="create_time"/>
+        <result property="modifyTime" column="modify_time"/>
+        <result property="sourceImgUrl" column="source_img_url"/>
+    </resultMap>
+
+    <select id="fileList" resultType="com.zw.opencv.generator.entity.ProjectStatus">
+--         SELECT
+--             ta.* ,
+--             ta2.name purchase_agent_name,
+--             ta2.mobile purchase_agent_mobile
+--         FROM ta_agent ta
+--             LEFT JOIN ta_agent ta2 ON ta2.id = ta.purchase_id
+--         WHERE ta.id = #{agentId}
+    </select>
+
+
+</mapper>

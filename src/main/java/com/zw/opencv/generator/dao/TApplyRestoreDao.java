@@ -1,5 +1,6 @@
 package com.zw.opencv.generator.dao;
 
+import com.zw.opencv.generator.entity.ProjectStatus;
 import com.zw.opencv.generator.entity.TApplyRestoreEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -13,5 +14,6 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface TApplyRestoreDao extends BaseMapper<TApplyRestoreEntity> {
-	
+
+    ProjectStatus statictisApplyInfo(Integer id);
 }

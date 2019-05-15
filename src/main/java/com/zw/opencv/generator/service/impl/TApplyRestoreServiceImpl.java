@@ -1,5 +1,6 @@
 package com.zw.opencv.generator.service.impl;
 
+import com.zw.opencv.generator.entity.ProjectStatus;
 import com.zw.opencv.util.PageUtils;
 import com.zw.opencv.util.Query;
 import org.springframework.stereotype.Service;
@@ -27,4 +28,9 @@ public class TApplyRestoreServiceImpl extends ServiceImpl<TApplyRestoreDao, TApp
         return new PageUtils(page);
     }
 
+    @Override
+    public ProjectStatus statictisApplyInfo(Integer id) {
+//        return baseMapper.statictisApplyInfo(id);
+        return null;
+    }
 }

@@ -4,7 +4,7 @@ server:
     uri-encoding: UTF-8
     max-threads: 1000
     min-spare-threads: 30
-  port: 8080
+  port: 8083
   connection-timeout: 5000ms
   servlet:
     context-path: /opencv
@@ -17,6 +17,8 @@ server:
 
 ## File Storage Properties
 # Please change this to the path where you want the uploaded files to be stored.
+#file:
+#  upload-dir: /Users/zhangwei/uploads
 file:
   upload-dir: /Users/zhangwei/uploads
 

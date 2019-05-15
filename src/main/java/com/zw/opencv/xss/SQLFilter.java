@@ -8,7 +8,8 @@
 
 package com.zw.opencv.xss;
 
-import io.renren.common.exception.RRException;
+
+import com.zw.opencv.exception.RRException;
 import org.apache.commons.lang.StringUtils;
 
 /**
