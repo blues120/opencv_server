@@ -6,7 +6,10 @@ import java.util.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.zw.opencv.exception.RRException;
+import com.zw.opencv.filedemo.controller.FileController;
 import com.zw.opencv.filedemo.payload.UploadFileResponse;
+import com.zw.opencv.filedemo.property.FileStorageProperties;
 import com.zw.opencv.filedemo.service.FileStorageService;
 import com.zw.opencv.generator.entity.TApplyRestoreEntity;
 import com.zw.opencv.generator.service.TApplyRestoreService;
@@ -17,6 +20,8 @@ import com.zw.opencv.util.R;
 
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,6 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("api/project")
 public class TProjectController {
+    private static final Logger logger = LoggerFactory.getLogger(TProjectController.class);
+
     @Autowired
     private TProjectService tProjectService;
 
@@ -48,6 +55,9 @@ public class TProjectController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private FileStorageProperties fileStorageProperties;
+
     @PostMapping("/uploadFile")
     @ResponseBody
     public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file,
@@ -56,6 +66,12 @@ public class TProjectController {
                                          @RequestParam("projectName") String projectName,
                                          String userSelect
     ) {
+
+        TProjectEntity projectEntity=tProjectService.getOne(new QueryWrapper<TProjectEntity>().eq("name",projectName).last("limit 1"));
+        if (projectEntity!=null){
+            throw new RRException("项目名称已存在!");
+        }
+
         JSONObject jsonObject = JSON.parseObject(userSelect);
 
 
@@ -87,9 +103,14 @@ public class TProjectController {
 
         String fileName_2 = fileStorageService.storeFile(bgFiles);
 
-        String filePath="/Users/zhangwei/uploads/"+file.getOriginalFilename();
-        String filePath_2="/Users/zhangwei/uploads/"+bgFiles.getOriginalFilename();
-        this.imageEncrypt(resultMap.size(),threshold,bWeight,filePath,filePath_2,projectName);
+        String filePath=fileStorageProperties.getUploadDir()+file.getOriginalFilename();
+        String filePath_2=fileStorageProperties.getUploadDir()+bgFiles.getOriginalFilename();
+
+        try {
+            this.imageEncrypt(resultMap.size(),threshold,bWeight,filePath,filePath_2,projectName);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
 
 
@@ -395,7 +416,7 @@ public class TProjectController {
         int cowNumber1 = img1.cols();
         int totalPoint =rowNumber1*cowNumber1;
 //        200*200*8/B，向上取整，再*B
-        int changeNumber =(totalPoint*8);
+        int changeNumber =rowNumber1*cowNumber1*8*B;
 
         int s1[][] = new int[rowNumber1][cowNumber1];
         for (int r = 0; r < img1.rows(); r++)//将秘密图像灰度值按像素存入二维数组
@@ -669,7 +690,7 @@ public class TProjectController {
 		}
 //		imshow("Test1", M1);   //窗口中显示图像
 //		imwrite("F:/存放素材/生成的秘密份额/1.png", M1);    //保存生成的图片
-        Highgui.imwrite("/Users/zhangwei/test/"+projectName+"_"+1+".png",M1);
+        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+1+".png",M1);
 
         if (num==1){
             return;
@@ -686,7 +707,7 @@ public class TProjectController {
                 M2.get(r,c)[0]=pij[1][r][c];
 			}
 		}
-        Highgui.imwrite("/Users/zhangwei/test/"+projectName+"_"+2+".png",M2);
+        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+2+".png",M2);
 
 
         if (num==2){
@@ -703,7 +724,7 @@ public class TProjectController {
                 M3.get(r,c)[0]=pij[2][r][c];
             }
         }
-        Highgui.imwrite("/Users/zhangwei/test/"+projectName+"_"+3+".png",M3);
+        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+3+".png",M3);
 
         if (num==3){
             return;
@@ -718,7 +739,7 @@ public class TProjectController {
                 M4.get(r,c)[0]=pij[3][r][c];
             }
         }
-        Highgui.imwrite("/Users/zhangwei/test/"+projectName+"_"+4+".png",M4);
+        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+4+".png",M4);
 
 
         if (num==4){
@@ -733,7 +754,7 @@ public class TProjectController {
                 M5.get(r,c)[0]=pij[4][r][c];
             }
         }
-        Highgui.imwrite("/Users/zhangwei/test/"+projectName+"_"+5+".png",M5);
+        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+5+".png",M5);
 
 
     }
