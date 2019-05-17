@@ -21,6 +21,7 @@
         <commons.lang.version>2.6</commons.lang.version>
         <commons.fileupload.version>1.2.2</commons.fileupload.version>
         <commons.io.version>2.5</commons.io.version>
+        <fastjson.version>1.2.54</fastjson.version>
     </properties>
 
     <dependencies>
@@ -93,6 +94,11 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
         </dependency>
     </dependencies>
 

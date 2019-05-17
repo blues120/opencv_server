@@ -54,9 +54,9 @@ mybatis-plus:
 
 
 spring:
-#  http:
-#    multipart:
-#      location: ${tmp.file.path} # 注意：tmp.file.path 如果不存在，spring会认为是相对路径，对应根路径是tomcat临时文件目录
+  http:
+    multipart:
+      location: ${tmp.file.path} # 注意：tmp.file.path 如果不存在，spring会认为是相对路径，对应根路径是tomcat临时文件目录
   # jackson时间格式化
   jackson:
     time-zone: GMT+8
