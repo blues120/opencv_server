@@ -481,7 +481,7 @@ public class TProjectController {
 //        Arrays.fill(xk, 0);
         for (int i = 0; i <changeNumber ; i++) {
             for (int n = 0; n <5 ; n++) {
-                xk[i][k]=0;
+                xk[i][n]=0;
             }
         }
         int bn = 0;
