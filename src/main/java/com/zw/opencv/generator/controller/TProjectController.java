@@ -414,7 +414,6 @@ public class TProjectController {
         }
         int rowNumber1 = img1.rows();
         int cowNumber1 = img1.cols();
-        int totalPoint =rowNumber1*cowNumber1;
 //        200*200*8/B，向上取整，再*B
         int changeNumber =rowNumber1*cowNumber1*8*B;
 
@@ -429,7 +428,7 @@ public class TProjectController {
         }
 
         int ax = 0;
-        int ag[] = new int[changeNumber];// 200*200*8/B，向上取整，再*B
+        int ag[] = new int[rowNumber1*cowNumber1*8];// 200*200*8/B，向上取整，再*B
         Arrays.fill(ag, 0);
         for (int r = 0; r < img1.rows(); r++)//十进制灰度值转八位二进制并且存入新数组ag[ax]中
         {
@@ -451,14 +450,15 @@ public class TProjectController {
             }
         }
 
+//        todo 如何确定这儿的changeNumber是多少，
         int cb = 0;
         int ct;
-//		int si[totalPoint] = { 0 };//200*200*8/B,向上取整
         int si[] = new int[changeNumber];// 200*200*8/B，向上取整，再*B
         Arrays.fill(si, 0);
         int cxt = B - 1;
-        for (ct = 0; ct < totalPoint; ct++) {
+        for (ct = 0; ct < rowNumber1*cowNumber1*8/B; ct++) {
             for (ax = cb; ax < cb + B; ax++) {
+//                todo cxt确定，ag r*c*8
                 si[ct] = si[ct] + ag[ax] * (int) Math.pow(2, cxt);
                 cxt--;
             }
@@ -470,7 +470,6 @@ public class TProjectController {
 
         ////秘密图像共享阶段
         int bi;
-//		int sii[totalPoint] = { 0 };//200*200*8/B,向上取整
         int sii[] = new int[changeNumber];// 200*200*8/B，向上取整，再*B
         Arrays.fill(sii, 0);
         for (bi = 0; bi < changeNumber; bi++) {
@@ -628,11 +627,11 @@ public class TProjectController {
         l = 0;
         for (int r = 0; r < rowNumber2; r++)//将秘密份额嵌入宿主图像的像素值中，生成与加解密参与份数相同的秘密图片
         {
-            if (bi > totalPoint) {
+            if (bi > changeNumber) {
                 break;
             }
             for (int c = 0; c < cowNumber2; c++) {
-                if (bi > totalPoint) {
+                if (bi > changeNumber) {
                     break;
                 }
                 for (da = 0; da < num; da++) {
