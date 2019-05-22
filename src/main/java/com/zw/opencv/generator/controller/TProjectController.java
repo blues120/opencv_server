@@ -12,8 +12,11 @@ import com.zw.opencv.filedemo.payload.UploadFileResponse;
 import com.zw.opencv.filedemo.property.FileStorageProperties;
 import com.zw.opencv.filedemo.service.FileStorageService;
 import com.zw.opencv.generator.entity.TApplyRestoreEntity;
+import com.zw.opencv.generator.entity.TUserEntity;
+import com.zw.opencv.generator.entity.TUserFileEntity;
 import com.zw.opencv.generator.service.TApplyRestoreService;
 import com.zw.opencv.generator.service.TUserFileService;
+import com.zw.opencv.generator.service.TUserService;
 import com.zw.opencv.util.CommonUtil;
 import com.zw.opencv.util.R;
 
@@ -58,9 +61,12 @@ public class TProjectController {
     @Autowired
     private FileStorageProperties fileStorageProperties;
 
+    @Autowired
+    private TUserService tUserService;
+
     @PostMapping("/uploadFile")
     @ResponseBody
-    public UploadFileResponse uploadFile(@RequestParam("file") MultipartFile file,
+    public R uploadFile(@RequestParam("file") MultipartFile file,
                                          @RequestParam("bgFiles") MultipartFile bgFiles,
                                          @RequestParam("threshold") Integer threshold,
                                          @RequestParam("projectName") String projectName,
@@ -69,7 +75,7 @@ public class TProjectController {
 
         TProjectEntity projectEntity=tProjectService.getOne(new QueryWrapper<TProjectEntity>().eq("name",projectName).last("limit 1"));
         if (projectEntity!=null){
-            throw new RRException("项目名称已存在!");
+            return R.error("项目名称已存在!");
         }
 
         JSONObject jsonObject = JSON.parseObject(userSelect);
@@ -88,15 +94,9 @@ public class TProjectController {
 
         }
 
-        Map<String, String> resultMap= CommonUtil.sortMapByValue(map);
+        Map<String, String> resultMap=new CommonUtil().sortMapByValue(map);
 
-        int bWeight[] =new int[10];
-        int index=0;
-        for (String key : map.keySet()) {
-            bWeight[index]=Integer.parseInt(map.get(key));
-            System.out.println("Key = " + key);
-            index++;
-        }
+
 //
 //
         String fileName = fileStorageService.storeFile(file);
@@ -107,7 +107,7 @@ public class TProjectController {
         String filePath_2=fileStorageProperties.getUploadDir()+bgFiles.getOriginalFilename();
 
         try {
-            this.imageEncrypt(resultMap.size(),threshold,bWeight,filePath,filePath_2,projectName);
+            this.imageEncrypt(resultMap.size(),threshold,resultMap,filePath,filePath_2,projectName);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -122,8 +122,7 @@ public class TProjectController {
 
 //        this.imageEncrypt(4,10,bWeight,filePath);
 
-        return new UploadFileResponse(fileName, fileDownloadUri,
-                file.getContentType(), file.getSize());
+        return R.ok("加密成功");
     }
 
 
@@ -233,13 +232,13 @@ public class TProjectController {
 
 
 
-    public void imageEncrypt(int joinNum, int threshold, int bWeight[],String filePath,String filePath_2,String projectName) {
+    public void imageEncrypt(int joinNum, int threshold, Map<String, String> userMap,String filePath,String filePath_2,String projectName) {
 
 
 
         int  ω, α, β;
         int a[]=new int[100];//存放生成的素数
-        int b[]=new int[10];//存放输入的秘密份额秘密份额
+        int b[]= new int[10];//存放输入的秘密份额秘密份额
         int d[] = new int[10];//存放生成的权限值
         Arrays.fill(d,0);
         int e[] = new int[100];//生成α时作为中间过渡值
@@ -249,7 +248,18 @@ public class TProjectController {
         int num;
 
         ω=threshold;
-        b=bWeight.clone();
+
+
+//        给b数组负值
+        int index=0;
+        for (String key : userMap.keySet()) {
+            b[index]=Integer.parseInt(userMap.get(key));
+            System.out.println("Key = " + key);
+            index++;
+        }
+
+
+
         num=joinNum;
 
 //        char stra[100] = "请输入参与秘密分配的人数（1-5）: ";
@@ -390,29 +400,25 @@ public class TProjectController {
                     p++;
                     bp++;
                 }
-                else
+            }
+            for (j = l + 1,q=j+1; q < num; q++)
+            {
+                if (b[l] + b[j] + b[q] < ω)
                 {
-                    for (q = j + 1; q < num; q++)
-                    {
-                        if (b[l] + b[j] + b[q] < ω)
-                        {
-                            f[p] = d[l] * d[j] * d[q];
-                            p++;
-                            bp++;
-                        }
-                        else
-                        {
-                            for (m = q + 1; m < num; m++)
-                            {
-                                if (b[l] + b[j] + b[q] + b[m] < ω)
-                                {
-                                    f[p] = d[l] * d[j] * d[q] * d[m];
-                                    p++;
-                                    bp++;
-                                }
-                            }
-                        }
-                    }
+                    f[p] = d[l] * d[j] * d[q];
+                    p++;
+                    bp++;
+                }
+            }
+
+            for (j = l + 1, q = j + 1,m = q + 1; m < num; m++)
+            {
+                if (b[l] + b[j] + b[q] + b[m] < ω)
+                {
+                    f[p] = d[l] * d[j] * d[q] * d[m];
+                    p++;
+                    bp++;
+
                 }
             }
         }
@@ -428,7 +434,7 @@ public class TProjectController {
 
         int B;
 //        B = floor(log2(α - β));//输出B个秘密图像二进制值被视为一段
-        B = (int) Math.floor(Math.log(α - β));
+        B = (int) Math.floor(Math.log(α - β)/Math.log(2));
 
 
         Mat img1 = Highgui.imread(filePath, Highgui.CV_LOAD_IMAGE_GRAYSCALE);
@@ -468,15 +474,15 @@ public class TProjectController {
                 int temp[] = new int[8];
                 Arrays.fill(temp,0);
                 bi = s1[r][c];
-                while (bi>0)
+                while (bj<8)
                 {
                     temp[bj] = bi % 2;
                     bi /= 2;
                     bj++;
                 }
-                for (bi = 7; bi >= 0; bi--, ax++)
+                for (bj = 7; bj >= 0; bj--, ax++)
                 {
-                    ag[ax] = temp[bi];
+                    ag[ax] = temp[bj];
                 }
             }
         }
@@ -540,11 +546,9 @@ public class TProjectController {
         for (int i = 0; i < 5; i++) {
             for (int n = 0; n <21334 ; n++) {
                 for (int o = 0; o <5 ; o++) {
-                    xkj[i][n][0]=0;
+                    xkj[i][n][o]=0;
                 }
-
             }
-
         }
 
         for (bi = 0; bi < 21334; bi++)//将xk变化为以5为基的形式xkj，并将变化以后的l位5进制存入新的三维数组中
@@ -558,7 +562,7 @@ public class TProjectController {
                 int t;
                 t = xk[bi][l];
 //                todo
-                while (t>5)
+                while (bj<5)
                 {
                     ba[bj] = t % 5;
                     t /= 5;
@@ -578,7 +582,7 @@ public class TProjectController {
         ;//读取宿主图像
         if (img2.empty()) {
 //			cout << "图片读取错误，请检查" << endl;
-//			exit(1);
+//			exit(1);r
         }
         int rowNumber2 = img2.rows();
         int cowNumber2 = img2.cols();
@@ -592,10 +596,10 @@ public class TProjectController {
         }
 
         int pj[][][] = new int[5][400][400];//5个参与者，宿主图像大小400*400
-        for (int i = 0; i < 5; i++) {
-            for (int n = 0; n <400 ; n++) {
-                for (int o = 0; o <5 ; o++) {
-                    pj[i][n][o]=0;
+        for (int n = 0; n < 5; n++) {
+            for (int o = 0; o <400 ; o++) {
+                for (int i = 0; i <400 ; i++) {
+                    pj[n][o][i]=0;
                 }
             }
         }
@@ -630,9 +634,9 @@ public class TProjectController {
         }
 
         int dj[][][] = new int[5][400][400];
-        for (int i = 0; i < 5; i++) {
-            for (int n = 0; n <400 ; n++) {
-                for (int o = 0; o <400 ; o++) {
+        for (int n = 0; n < 400; n++) {
+            for (int o = 0; o <400 ; o++) {
+                for (int i = 0; i <num ; i++) {
                     dj[i][n][o]=0;
                 }
             }
@@ -655,38 +659,32 @@ public class TProjectController {
         l = 0;
         for (int r = 0; r < rowNumber2; r++)//将秘密份额嵌入宿主图像的像素值中，生成与加解密参与份数相同的秘密图片
         {
-            if (bi > 21334)
+            if (bi == 21334)
             {
                 break;
             }
             for (int c = 0; c < cowNumber2; c++)
             {
-                if (bi > 21334)
+                if (bi == 21334)
                 {
                     break;
                 }
                 for (da = 0; da < num; da++)
                 {
-//                    if (2 < (dj[da][r][c] - xkj[l][bi][da]) < 5)
-//                    {
-//                        pij[da][r][c] = pj[da][r][c] - dj[da][r][c] + 5 + xkj[l][bi][da];
-//                    }
-//                    else if (-2 <= (dj[da][r][c] - xkj[l][bi][da]) <= 2)
-//                    {
-//                        pij[da][r][c] = pj[da][r][c] - dj[da][r][c] + xkj[l][bi][da];
-//                    }
-//                    else if (-5 < (dj[da][r][c] - xkj[l][bi][da]) < -2)
-//                    {
-//                        pij[da][r][c] = pj[da][r][c] - dj[da][r][c] - 5 + xkj[l][bi][da];
-//                    }
                     int temp = (dj[da][r][c] - xkj[l][bi][da]);
-                    if ((2 < temp) && (temp < 5)) {
+                    if ((2 < temp) && (temp < 5))
+                    {
                         pij[da][r][c] = pj[da][r][c] - dj[da][r][c] + 5 + xkj[l][bi][da];
-                    } else if ((-2 < temp) && (temp < 2)) {
+                    }
+                    else if ((-2 <= temp) && (temp <= 2))
+                    {
                         pij[da][r][c] = pj[da][r][c] - dj[da][r][c] + xkj[l][bi][da];
-                    } else if ((-5 < temp) && (temp < -2)) {
+                    }
+                    else if ((-5 < temp) && (temp < -2))
+                    {
                         pij[da][r][c] = pj[da][r][c] - dj[da][r][c] - 5 + xkj[l][bi][da];
                     }
+                    else break;
                 }
                 l++;
                 if (l >= xl)//bb若等于五进制数位数，清零，进入下一秘密数组
@@ -719,87 +717,192 @@ public class TProjectController {
         }
 
 
+        Iterator iter = userMap.entrySet().iterator();
+        int keyIndex=0;
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            Object key = entry.getKey();
+            Object val = entry.getValue();
 
-        int r, c;
-        Mat M1= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);
-//		Mat M1(400, 400, CV_8UC1);//创建一个高400,宽400的灰度图的Mat对象
-//		namedWindow("Test1");     //创建一个名为Test窗口
 
-        for (r = 0; r < M1.rows(); r++)        //遍历每一行每一列并设置其像素值
-        {
-            for (c = 0; c < M1.cols(); c++)
+            int r=0;
+            int c=0;
+            Mat M1= new Mat(400,400, Highgui.CV_LOAD_IMAGE_GRAYSCALE);
+
+
+            for (r = 0; r < M1.rows(); r++)        //遍历每一行每一列并设置其像素值
             {
-//				M1.at<uchar>(r, c) = pij[0][r][c];
-                M1.get(r,c)[0]=pij[0][r][c];
+
+                for (c = 0; c < M1.cols(); c++)
+                {
+
+                    M1.put(r,c,pij[keyIndex][r][c]);
+//                    System.out.println(M1.get(r,c)[0]);
+                }
             }
-        }
-//		imshow("Test1", M1);   //窗口中显示图像
-//		imwrite("F:/存放素材/生成的秘密份额/1.png", M1);    //保存生成的图片
-        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+1+".png",M1);
 
-        if (num==1){
-            return;
+
+            String path=fileStorageProperties.getUploadDir()+projectName+"_"+key+".png";
+
+
+            Highgui.imwrite(path,M1);
+            keyIndex++;
+
+
+
+
+
         }
 
-//		cvDestroyWindow("Test1");
+
+        TProjectEntity projectEntity=new TProjectEntity();
+        projectEntity.setName(projectName);
+        projectEntity.setJoinnum(userMap.size());
+//        权制
+        projectEntity.setThreshold(threshold);
+        projectEntity.setCreateTime(new Date());
+        projectEntity.setModifyTime(new Date());
+//        xl
+        projectEntity.setXl_int(xl);
+//        B
+        projectEntity.setB_int(B);
+        tProjectService.saveOrUpdate(projectEntity);
+
+        Iterator iterator = userMap.entrySet().iterator();
+        keyIndex=0;
+        while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            Object key = entry.getKey();
+            Object val = entry.getValue();
+
+            String path=fileStorageProperties.getUploadDir()+projectName+"_"+key+".png";
+
+
+            TUserEntity userEntity=tUserService.getOne(new QueryWrapper<TUserEntity>().eq("name",key));
+
+            TUserFileEntity userFileEntity = new TUserFileEntity();
+            userFileEntity.setProjectId(projectEntity.getId());
+            userFileEntity.setUserId(userEntity.getId());
+            userFileEntity.setAuthWeight(Integer.parseInt(val.toString()));
+            userFileEntity.setCreateTime(new Date());
+            userFileEntity.setModifyTime(new Date());
+
+            userFileEntity.setImgUrl(path);
+
+            userFileEntity.setB_temp(b[keyIndex]);
+            userFileEntity.setD_temp(d[keyIndex]);
+
+
+        }
+
+
+
+        System.out.println("image encrpt complete");
+
 //
-        Mat M2= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
-//		namedWindow("Test2");     //创建一个名为Test窗口
-        for (r = 0; r < M2.rows(); r++)        //遍历每一行每一列并设置其像素值
-        {
-            for (c = 0; c < M2.cols(); c++)
-            {
-                M2.get(r,c)[0]=pij[1][r][c];
-            }
-        }
-        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+2+".png",M2);
-
-
-        if (num==2){
-            return;
-        }
-
-
-        Mat M3= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
-//		namedWindow("Test2");     //创建一个名为Test窗口
-        for (r = 0; r < M3.rows(); r++)        //遍历每一行每一列并设置其像素值
-        {
-            for (c = 0; c < M3.cols(); c++)
-            {
-                M3.get(r,c)[0]=pij[2][r][c];
-            }
-        }
-        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+3+".png",M3);
-
-        if (num==3){
-            return;
-        }
-
-        Mat M4= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
-//		namedWindow("Test2");     //创建一个名为Test窗口
-        for (r = 0; r < M4.rows(); r++)        //遍历每一行每一列并设置其像素值
-        {
-            for (c = 0; c < M4.cols(); c++)
-            {
-                M4.get(r,c)[0]=pij[3][r][c];
-            }
-        }
-        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+4+".png",M4);
-
-
-        if (num==4){
-            return;
-        }
-        Mat M5= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
-//		namedWindow("Test2");     //创建一个名为Test窗口
-        for (r = 0; r < M5.rows(); r++)        //遍历每一行每一列并设置其像素值
-        {
-            for (c = 0; c < M5.cols(); c++)
-            {
-                M5.get(r,c)[0]=pij[4][r][c];
-            }
-        }
-        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+5+".png",M5);
+//        int r=0;
+//        int c=0;
+//        Mat M1= new Mat(400,400, Highgui.CV_LOAD_IMAGE_GRAYSCALE);
+// //       Mat M1=img2.clone();
+////		Mat M1(400, 400, CV_8UC1);//创建一个高400,宽400的灰度图的Mat对象
+////		namedWindow("Test1");     //创建一个名为Test窗口
+//
+//        for (r = 0; r < M1.rows(); r++)        //遍历每一行每一列并设置其像素值
+//        {
+////            System.out.println(Arrays.toString(pij[0][r]));
+//            for (c = 0; c < M1.cols(); c++)
+//            {
+////				M1.at<uchar>(r, c) = pij[0][r][c];
+//                M1.put(r,c,pij[0][r][c]);
+//                System.out.println(M1.get(r,c)[0]);
+//            }
+//        }
+//
+////		imshow("Test1", M1);   //窗口中显示图像
+////		imwrite("F:/存放素材/生成的秘密份额/21.png", M1);    //保存生成的图片
+////        Highgui.imwrite("F:/存放素材/生成的秘密份额/21.png", M1);
+//        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+1+".png",M1);
+//
+//        if (num==1){
+//            return;
+//        }
+//
+////		cvDestroyWindow("Test1");
+////
+//       Mat M2= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
+//     //   Mat M2=img2.clone();
+////		namedWindow("Test2");     //创建一个名为Test窗口
+//        for (r = 0; r < M2.rows(); r++)        //遍历每一行每一列并设置其像素值
+//        {
+////            System.out.println(Arrays.toString(pij[1][r]));
+//            for (c = 0; c < M2.cols(); c++)
+//            {
+//                M2.put(r,c,pij[1][r][c]);
+//                System.out.println(M2.get(r,c)[0]);
+//            }
+//        }
+//       Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+2+".png",M2);
+////        Highgui.imwrite("F:/存放素材/生成的秘密份额/22.png", M2);
+//
+//
+//        if (num==2){
+//            return;
+//        }
+//
+//
+//       Mat M3= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
+//     //   Mat M3=img2.clone();
+////		namedWindow("Test2");     //创建一个名为Test窗口
+//        for (r = 0; r < M3.rows(); r++)        //遍历每一行每一列并设置其像素值
+//        {
+//            for (c = 0; c < M3.cols(); c++)
+//            {
+//                M3.put(r,c,pij[2][r][c]);
+//                System.out.println(M3.get(r,c)[0]);
+//            }
+//        }
+//        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+3+".png",M3);
+// //       Highgui.imwrite("F:/存放素材/生成的秘密份额/23.png", M3);
+//
+//        if (num==3){
+//            return;
+//        }
+//
+//        Mat M4= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
+////        Mat M4=img2.clone();
+////		namedWindow("Test2");     //创建一个名为Test窗口
+//        for (r = 0; r < M4.rows(); r++)        //遍历每一行每一列并设置其像素值
+//        {
+//            for (c = 0; c < M4.cols(); c++)
+//            {
+//                M4.put(r,c,pij[3][r][c]);
+//                System.out.println(M4.get(r,c)[0]);
+//               // M4.get(r,c)[1]=pij[3][r][c];
+//            }
+//        }
+//        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+4+".png",M4);
+////        Highgui.imwrite("F:/存放素材/生成的秘密份额/24.png", M4);
+//
+//
+//        if (num==4){
+//            return;
+//        }
+//       Mat M5= new Mat(400,400,Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高400,宽400的灰度图的Mat对象
+//       // Mat M5=img2.clone();
+////		namedWindow("Test2");     //创建一个名为Test窗口
+//        for (r = 0; r < M5.rows(); r++)        //遍历每一行每一列并设置其像素值
+//        {
+//            for (c = 0; c < M5.cols(); c++)
+//            {
+//             //   M5.get(r,c)[0]=pij[4][r][c];
+//                M5.put(r,c,pij[4][r][c]);
+//                System.out.println(M5.get(r,c)[0]);
+//
+//            }
+//        }
+//
+//        Highgui.imwrite(fileStorageProperties.getUploadDir()+projectName+"_"+5+".png",M5);
+////        Highgui.imwrite("F:/存放素材/生成的秘密份额/25.png", M5);
 
 
     }

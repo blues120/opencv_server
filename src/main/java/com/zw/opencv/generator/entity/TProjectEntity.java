@@ -55,4 +55,12 @@ public class TProjectEntity implements Serializable {
 	@TableField(exist = false)
 	private Integer authTotal;
 
+
+	private Integer xl_int;
+
+	private Integer b_int;
+
+
+
+
 }

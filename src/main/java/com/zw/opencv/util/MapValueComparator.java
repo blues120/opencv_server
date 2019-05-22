@@ -9,11 +9,11 @@ import java.util.Map;
  * @author: Mr.zhang
  * @create: 2019-05-16 20:43
  **/
-public class MapValueComparator implements Comparator<Map.Entry<String, String>> {
+public class MapValueComparator implements Comparator<String>{
 
     @Override
-    public int compare(Map.Entry<String, String> me1, Map.Entry<String, String> me2) {
+    public int compare(String str1, String str2) {
 
-        return me2.getValue().compareTo(me1.getValue());
+        return str1.compareTo(str2);
     }
 }
