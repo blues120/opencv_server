@@ -1,5 +1,6 @@
 package com.zw.opencv.generator.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
@@ -48,5 +49,8 @@ public class TUserEntity implements Serializable {
 	 * 0:系统用户，1：普通用户
 	 */
 	private Integer type;
+
+	@TableField(exist = false)
+	private String projectIds;
 
 }

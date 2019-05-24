@@ -64,6 +64,20 @@ public class TProjectController {
     @Autowired
     private TUserService tUserService;
 
+
+
+    /**
+     * 列表
+     */
+    @RequestMapping("/decrptPicture")
+    public R decrptPicture(@RequestBody TProjectEntity entity) {
+
+
+
+        return R.ok();
+
+    }
+
     @PostMapping("/uploadFile")
     @ResponseBody
     public R uploadFile(@RequestParam("file") MultipartFile file,
@@ -127,6 +141,54 @@ public class TProjectController {
 
 
 
+    @PostMapping("/applyRestore")
+    @ResponseBody
+    public R applyRestore(@RequestParam("file") MultipartFile file,
+                          @RequestParam("projectId") Integer projectId,
+                          @RequestParam("userId") Integer userId) {
+
+        TApplyRestoreEntity projectEntity=tApplyRestoreService.getOne(new QueryWrapper<TApplyRestoreEntity>()
+                .eq("user_id",userId)
+                .eq("project_id",projectId)
+                .last("limit 1"));
+        if (projectEntity!=null){
+
+            String fileName = fileStorageService.storeFile(file);
+
+
+            String filePath=fileStorageProperties.getUploadDir()+file.getOriginalFilename();
+            projectEntity.setImgUrl(filePath);
+            projectEntity.setModifyTime(new Date());
+            tApplyRestoreService.updateById(projectEntity);
+
+        }else{
+            String fileName = fileStorageService.storeFile(file);
+
+
+            String filePath=fileStorageProperties.getUploadDir()+file.getOriginalFilename();
+            TApplyRestoreEntity entity=new TApplyRestoreEntity();
+            entity.setUserId(userId);
+            entity.setProjectId(projectId);
+            entity.setImgUrl(filePath);
+            entity.setCreateTime(new Date());
+            entity.setModifyTime(new Date());
+
+            tApplyRestoreService.save(entity);
+
+
+
+        }
+
+
+
+
+
+
+        return R.ok("申请成功");
+    }
+
+
+
 
     /**
      * 列表
@@ -141,18 +203,75 @@ public class TProjectController {
             Integer count = tApplyRestoreService.count(new QueryWrapper<TApplyRestoreEntity>().eq("project_id", temp.getId()));
             temp.setApplyNum(count);
 //            TUserFileEntity entity= tUserFileService.getOne(new QueryWrapper<TUserFileEntity>().eq("project_id",temp.getId()));
-            Integer authTotal = tUserFileService.statictisInfo(temp.getId());
-            temp.setAuthTotal(authTotal);
-            list.set(i, temp);
-            if (authTotal < temp.getThreshold()) {
-                list.remove(i);
-            }
+
+//            if (temp.getAuthTotal() < temp.getThreshold()) {
+//                list.remove(i);
+//            }
         }
 
 
         return R.ok().put("list", list);
 
     }
+
+    /**
+     * 列表
+     */
+    @RequestMapping("/receiveFileList")
+    public R receiveFileList(@RequestParam String userId) {
+
+
+        List<TUserFileEntity> list=tUserFileService.list(new QueryWrapper<TUserFileEntity>().eq("user_id",userId));
+        for (int i = 0; i <list.size() ; i++) {
+            TUserFileEntity temp=list.get(i);
+            TProjectEntity projectEntity=tProjectService.getById(temp.getProjectId());
+            temp.setProjectName(projectEntity.getName());
+
+
+            Integer point =temp.getImgUrl().lastIndexOf("/");
+            String tempStr=temp.getImgUrl().substring(point+1);
+
+            temp.setDownloadFile("/downloadFile/"+tempStr);
+
+
+            list.set(i,temp);
+
+        }
+
+
+        return R.ok().put("list", list);
+
+    }
+
+
+    /**
+     * 列表
+     */
+    @RequestMapping("/userJoinProjectList")
+    public R userJoinProjectList(@RequestParam String userId) {
+
+
+        List<TUserFileEntity> list=tUserFileService.list(new QueryWrapper<TUserFileEntity>().eq("user_id",userId).groupBy("project_id"));
+        for (int i = 0; i <list.size() ; i++) {
+            TUserFileEntity temp=list.get(i);
+            TProjectEntity projectEntity=tProjectService.getById(temp.getProjectId());
+            temp.setProjectName(projectEntity.getName());
+
+
+            Integer joinNum=tApplyRestoreService.count(new QueryWrapper<TApplyRestoreEntity>().eq("user_id",userId).eq("project_id",projectEntity.getId()));
+
+            temp.setJoinNum(joinNum);
+
+
+                    list.set(i,temp);
+
+        }
+
+
+        return R.ok().put("list", list);
+
+    }
+
 
     /**
      * 列表
@@ -165,11 +284,22 @@ public class TProjectController {
         List<TProjectEntity> list = tProjectService.list();
         for (int i = 0; i < list.size(); i++) {
             TProjectEntity temp = list.get(i);
-            Integer count = tApplyRestoreService.count(new QueryWrapper<TApplyRestoreEntity>().eq("project_id", temp.getId()));
-            temp.setApplyNum(count);
+            List<TApplyRestoreEntity> list1 = tApplyRestoreService.list(new QueryWrapper<TApplyRestoreEntity>().eq("project_id", temp.getId()));
+            temp.setApplyNum(list1.size());
+
+            Integer total =0;
+            for (int j = 0; j < list1.size(); j++) {
+                TApplyRestoreEntity applyRestoreEntity= list1.get(j);
+                TUserFileEntity entity = tUserFileService.getOne(new QueryWrapper<TUserFileEntity>().eq("user_id",applyRestoreEntity.getUserId()));
+
+                total+=entity.getAuthWeight();
+
+            }
+
+
 //            TUserFileEntity entity= tUserFileService.getOne(new QueryWrapper<TUserFileEntity>().eq("project_id",temp.getId()));
-            Integer authTotal = tUserFileService.statictisInfo(temp.getId());
-            temp.setAuthTotal(authTotal);
+//            Integer authTotal = tUserFileService.statictisInfo(temp.getId());
+            temp.setAuthTotal(total);
             list.set(i, temp);
         }
 
@@ -791,6 +921,7 @@ public class TProjectController {
 
             userFileEntity.setB_temp(b[keyIndex]);
             userFileEntity.setD_temp(d[keyIndex]);
+            tUserFileService.save(userFileEntity);
 
 
         }

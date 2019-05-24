@@ -9,7 +9,6 @@
         <result property="userId" column="user_id"/>
         <result property="projectId" column="project_id"/>
         <result property="authWeight" column="auth_weight"/>
-        <result property="mignotte" column="mignotte"/>
         <result property="createTime" column="create_time"/>
         <result property="modifyTime" column="modify_time"/>
         <result property="imgUrl" column="img_url"/>
@@ -17,8 +16,10 @@
         <result property="d_temp" column="d_temp"/>
     </resultMap>
     <select id="statictisInfo" resultType="java.lang.Integer">
-        SELECT ssum(auth_weight)
+        SELECT sum(auth_weight)
         FROM t_user_file WHERE project_id =#{id}
     </select>
+
+
 
 </mapper>

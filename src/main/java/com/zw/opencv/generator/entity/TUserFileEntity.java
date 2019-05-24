@@ -1,5 +1,6 @@
 package com.zw.opencv.generator.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 
@@ -37,9 +38,7 @@ public class TUserFileEntity implements Serializable {
 	 */
 	private Integer authWeight;
 	/**
-	 * 
-	 */
-	private String mignotte;
+
 	/**
 	 * 
 	 */
@@ -56,6 +55,19 @@ public class TUserFileEntity implements Serializable {
 	private Integer b_temp;
 
 	private Integer d_temp;
+
+	/**
+	 *
+	 */
+	@TableField(exist = false)
+	private String projectName;
+
+
+	@TableField(exist = false)
+	private String downloadFile;
+
+	@TableField(exist = false)
+	private Integer joinNum;
 
 
 

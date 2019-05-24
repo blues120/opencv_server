@@ -3,6 +3,8 @@ package com.zw.opencv.generator.service.impl;
 import com.zw.opencv.util.PageUtils;
 import com.zw.opencv.util.Query;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -31,4 +33,6 @@ public class TUserFileServiceImpl extends ServiceImpl<TUserFileDao, TUserFileEnt
     public Integer statictisInfo(Integer id) {
         return baseMapper.statictisInfo(id);
     }
+
+
 }
