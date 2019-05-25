@@ -21,6 +21,7 @@ import com.zw.opencv.util.CommonUtil;
 import com.zw.opencv.util.R;
 
 
+import com.zw.opencv.util.ToolsUtil;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.slf4j.Logger;
@@ -66,13 +67,230 @@ public class TProjectController {
 
 
 
+
+
+
+
+
     /**
      * 列表
      */
     @RequestMapping("/decrptPicture")
-    public R decrptPicture(@RequestBody TProjectEntity entity) {
+    public R decrptPicture(Integer id) {
 
 
+
+        ////秘密图像还原程序
+        int dr=0;
+        int dc;
+        int dp[] = new int[5];
+        Arrays.fill(dp,0);
+//        char stre[100] = "请输入参加图像还原的人数: ";
+//        printf("%s", stre);
+//        scanf("%d", &dr);
+//        todo 获取申请还原人数   dr
+
+//        char strf[100] = "请输入参加图像还原的的具体成员，编号从小到大: ";
+//        printf("%s", strf);
+//        for (dc = 0; dc < dr; dc++)
+//        {
+//            scanf("%d", &dp[dc]);
+//        }
+
+        int pqj[][][]= new int[5][400][400];//最多5个秘密还原参与者，秘密份额大小为400*400
+        int r=0,c=0;
+
+        List<TApplyRestoreEntity> list1 = tApplyRestoreService.list(new QueryWrapper<TApplyRestoreEntity>().eq("project_id", id));
+        dr=list1.size();
+        for (int i = 0; i <list1.size() ; i++) {
+
+            TApplyRestoreEntity entity=list1.get(i);
+//            todo 不确定
+            dp[i]=entity.getUserId();
+
+
+
+
+
+            Mat M11 = Highgui.imread(entity.getImgUrl(), Highgui.CV_LOAD_IMAGE_GRAYSCALE);//读取第一张秘密份额图片
+            if (M11.empty())
+            {
+//            cout << "图片读取错误，请检查" << endl;
+//            exit(1);
+            }
+
+            for ( r = 0; r < M11.rows(); r++ )
+            {
+                for (c = 0; c < M11.cols();  c++)
+                {
+//                pqj[0][r][c] = M11.at<uchar>(r, c);//存入第一个参与者灰度值数组
+                    pqj[i][r][c] =(int) M11.get(r,c)[0];
+                }
+            }
+
+        }
+
+
+        TProjectEntity projectEntity=tProjectService.getById(id);
+        int xl=projectEntity.getXlInt();
+        int B=projectEntity.getBInt();
+
+
+
+        int dd;
+        int pxj[][][] = new int[5][400][400];//保存所有参与者提供的秘密份额的新三维数组
+        for (dd=0,dc = 0; dd < dr; dd++,dc++)//提取出指定参与者拥有的份额图像灰度值存入新三维数组
+        {
+            for (r = 0; r < 400; r++)
+            {
+                for (c = 0; c < 400; c++)
+                {
+//                    todo pj tansfer pqj
+                    pxj[dd][r][c] = pqj[dp[dc]-1][r][c] % 5;
+                }
+            }
+        }
+
+
+        int das;
+        int dxk[][] = new int[5][160000];//存取最多5个参与者，400*400大小的秘密数据
+        for (dd = 0; dd < dr; dd++)
+        {
+            das = 0;
+            for (r = 0; r < 400; r++)
+            {
+                for (c = 0; c < 400; c++)
+                {
+                    dxk[dd][das] = dxk[dd][das] + pxj[dd][r][c];//存取最多5个参与者，400*400大小的图像数据
+                    das++;
+                }
+            }
+        }
+
+        int dm = 0;
+        int dxt=4;
+        int dyt = 0;
+        int dxp[][] = new int[5][21334];//存放最多dr个参与者，共有200*200*8/B,向上取整
+        for (dd = 0; dd < dr; dd++)//dr个秘密还原参与者
+        {
+            dm = 0;//计数器
+            dxt = xl - 1;
+            for (dyt = 0; dyt < 21334; dyt++)
+            {
+
+                for (das = dm; das < dm + xl; das++)//上限为dm+xl个
+                {
+                    dxp[dd][dyt] = dxp[dd][dyt] + dxk[dd][das] * (int)Math.pow(5, dxt);
+                    dxt--;
+                }
+                dm = dm + xl;//dm往后移动xl个
+                dxt = xl-1;//xl-1
+            }
+        }
+
+        int sri[] = new int[21334];//200*200*8/B,向上取整
+        int ei = 0;
+        int ep = (int)Math.pow(2, B);
+        int en = dr;
+        for (ei = 0, dyt = 0; ei < 21334; dyt++, ei++)
+        {
+//            todo
+            long em[]=new long[15];
+            long ea[]=new long[15];
+            for (int i = 0,j=0; i < dr; i++,dd++)
+            {
+                Integer userid=dp[i];
+                TUserFileEntity userFileEntity=tUserFileService.getOne(new QueryWrapper<TUserFileEntity>().eq("user_id",userid).eq("project_id",id));
+
+                em[i]=userFileEntity.getDTemp();
+//                em[i] = d[dp[i]-1];//秘密还原参与者的份额大小
+                ea[i] = dxp[j][dyt];//产生的十进制秘密数据
+            }
+            sri[ei] = (int) (ToolsUtil.China(en, em, ea) % ep);//利用中国剩余定理计算完成以后对2^B次方取余
+
+        }
+
+        int eg[] = new int[320010];//200*200*8/B,向上取整
+        int ex = 0;
+        for (ei = 0; ei < 21334; ei++)//200*200*8/B,向上取整
+        {
+            int fi, fj = 0;
+            int fe[] = new int[15];//B位数组，暂存sri[ei]转换成B位2进制的值
+            fi = sri[ei];
+//            todo
+            while (fi>0)
+            {
+                fe[fj] = fi % 2;
+                fi /= 2;
+                fj++;
+            }
+            for (fj = B - 1; fj >= 0; fj--, ex++)//B为2进制数，第一位权值为B-1
+            {
+                eg[ex] = fe[fj];
+            }
+        }
+
+        int eb = 0;
+        int et;
+        int seg[] = new int[40000];//200*200个还原出的秘密图像像素灰度值
+        for (et = 0; et < 40000; et++)
+        {
+            int ext = 7;
+            for (ex = eb; ex < eb + 8; ex++)
+            {
+                seg[et] = seg[et] + eg[ex] * (int)Math.pow(2, ext);//将生成的B位2进制数转十进制后，全部变回2进制，8个分为一组，200*200个灰度值
+                ext--;
+            }
+            eb = eb + 8;
+        }
+
+        int sp[][] = new int[200][200];//与秘密图像大小对应的二维数组
+        int bl, bm;
+        et = 0;
+        for (bl = 0; bl < 200; bl++)
+        {
+            for (bm = 0; bm < 200; bm++)
+            {
+                sp[bl][bm] = seg[et];//将200*200个灰度值按顺序存入二维数组中
+                et++;
+            }
+        }
+
+        Mat M111= new Mat(200,200, Highgui.CV_LOAD_IMAGE_GRAYSCALE);//创建一个高200，宽200的灰度图的Mat对象
+//        namedWindow("Test111");     //创建一个名为Test窗口
+        for ( bl = 0; bl < M111.rows(); bl++)        //遍历每一行每一列并设置其像素值
+        {
+            for ( bm = 0; bm < M111.cols(); bm++)
+            {
+//                M111.at<uchar>(bl, bm) = sp[bl][bm];
+
+
+
+                M111.put(bl,bm,sp[bl][bm]);
+            }
+        }
+//        imshow("Test111", M111);   //窗口中显示图像
+        String path=fileStorageProperties.getUploadDir()+projectEntity.getName()+"_"+"origin"+".png";
+        Highgui.imwrite(path, M111);    //保存生成的图片
+//        cvDestroyWindow("Test111");
+//        getchar();
+
+//        把数据分发给申请人
+        for (int i = 0; i <list1.size() ; i++) {
+            TApplyRestoreEntity entity=list1.get(i);
+            TUserFileEntity userFileEntity=new TUserFileEntity();
+            userFileEntity.setType(1);
+            userFileEntity.setUserId(entity.getUserId());
+            userFileEntity.setProjectId(entity.getProjectId());
+            userFileEntity.setProjectName(projectEntity.getName());
+            userFileEntity.setCreateTime(new Date());
+            userFileEntity.setModifyTime(new Date());
+            userFileEntity.setImgUrl(path);
+
+            tUserFileService.save(userFileEntity);
+
+            
+        }
 
         return R.ok();
 
@@ -893,9 +1111,9 @@ public class TProjectController {
         projectEntity.setCreateTime(new Date());
         projectEntity.setModifyTime(new Date());
 //        xl
-        projectEntity.setXl_int(xl);
+        projectEntity.setXlInt(xl);
 //        B
-        projectEntity.setB_int(B);
+        projectEntity.setBInt(B);
         tProjectService.saveOrUpdate(projectEntity);
 
         Iterator iterator = userMap.entrySet().iterator();
@@ -919,9 +1137,11 @@ public class TProjectController {
 
             userFileEntity.setImgUrl(path);
 
-            userFileEntity.setB_temp(b[keyIndex]);
-            userFileEntity.setD_temp(d[keyIndex]);
+            userFileEntity.setBTemp(b[keyIndex]);
+            userFileEntity.setDTemp(d[keyIndex]);
             tUserFileService.save(userFileEntity);
+
+            keyIndex++;
 
 
         }

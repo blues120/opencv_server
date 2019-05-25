@@ -12,8 +12,8 @@
         <result property="createTime" column="create_time"/>
         <result property="modifyTime" column="modify_time"/>
         <result property="imgUrl" column="img_url"/>
-        <result property="b_temp" column="b_temp"/>
-        <result property="d_temp" column="d_temp"/>
+        <result property="bTemp" column="b_temp"/>
+        <result property="dTemp" column="d_temp"/>
     </resultMap>
     <select id="statictisInfo" resultType="java.lang.Integer">
         SELECT sum(auth_weight)

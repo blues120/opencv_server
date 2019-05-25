@@ -56,9 +56,9 @@ public class TProjectEntity implements Serializable {
 	private Integer authTotal;
 
 
-	private Integer xl_int;
+	private Integer xlInt;
 
-	private Integer b_int;
+	private Integer bInt;
 
 
 

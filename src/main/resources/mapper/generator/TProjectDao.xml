@@ -13,8 +13,8 @@
         <result property="modifyTime" column="modify_time"/>
         <result property="sourceImgUrl" column="source_img_url"/>
 
-        <result property="xl_int" column="xl_int"/>
-        <result property="b_int" column="b_int"/>
+        <result property="xlInt" column="xl_int"/>
+        <result property="bInt" column="b_int"/>
     </resultMap>
 
     <select id="fileList" resultType="com.zw.opencv.generator.entity.ProjectStatus">

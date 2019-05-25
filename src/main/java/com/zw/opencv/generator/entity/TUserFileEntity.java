@@ -52,9 +52,11 @@ public class TUserFileEntity implements Serializable {
 	 */
 	private String imgUrl;
 
-	private Integer b_temp;
+	private Integer bTemp;
 
-	private Integer d_temp;
+	private Integer dTemp;
+
+	private Integer type;
 
 	/**
 	 *
