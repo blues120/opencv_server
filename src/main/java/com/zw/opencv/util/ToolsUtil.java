@@ -10,14 +10,14 @@ public class ToolsUtil {
 
     public static long China(int n,long m[],long a[])
     {
-        long M=1;
+        long M=1,x=0;
         for(int i=0;i<n;i++)
         {
             M*=m[i];
         }
         TempDTO tempDTO=new TempDTO();
 //            d,x,y顺序参数
-        tempDTO.setD(0);
+//        tempDTO.setD(0);
         tempDTO.setX(0);
         tempDTO.setY(0);
 
@@ -25,16 +25,18 @@ public class ToolsUtil {
             long w=M/m[i];
 
             gcd(m[i],w,tempDTO);
-            tempDTO.setX((tempDTO.getX()+tempDTO.getY()*w*a[i])%M);
+            x=(x+tempDTO.getY()*w*a[i])%M;
+//            tempDTO.setX((tempDTO.getX()+tempDTO.getY()*w*a[i])%M);
 
         }
-        return (tempDTO.getX()+M)%M;
+        long result =(x+M)%M;
+        return result;
     }
 
 
     public static void gcd(long a,long b,TempDTO tempDTO)
     {
-        System.out.println("d="+tempDTO.getD()+"x="+tempDTO.getX()+"y="+tempDTO.getY());
+        System.out.println("a="+a+"b="+b+"d="+tempDTO.getD()+"x="+tempDTO.getX()+"y="+tempDTO.getY());
 //
 //        if(b==0){
 //            d=a;
@@ -46,7 +48,7 @@ public class ToolsUtil {
 //        }
 
         if(b==0){
-            tempDTO.setD(a);
+//            tempDTO.setD(a);
             tempDTO.setX(1);
             tempDTO.setY(0);
 
@@ -57,6 +59,10 @@ public class ToolsUtil {
             tempDTO.setX(tempDTO.getY());
             tempDTO.setY(temp);
             gcd(b,a%b,tempDTO);
+
+            long tempDTOX=tempDTO.getX();
+            tempDTO.setX(tempDTO.getY());
+            tempDTO.setY(tempDTOX);
 
             tempDTO.setY(tempDTO.getY()-(a/b)*tempDTO.getX());
 //            y-=(a/b)*x;
