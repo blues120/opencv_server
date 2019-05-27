@@ -476,7 +476,7 @@ public class TProjectController {
             temp.setProjectName(projectEntity.getName());
 
 
-            Integer joinNum=tApplyRestoreService.count(new QueryWrapper<TApplyRestoreEntity>().eq("user_id",userId).eq("project_id",projectEntity.getId()));
+            Integer joinNum=tApplyRestoreService.count(new QueryWrapper<TApplyRestoreEntity>().eq("project_id",projectEntity.getId()));
 
             temp.setJoinNum(joinNum);
 
