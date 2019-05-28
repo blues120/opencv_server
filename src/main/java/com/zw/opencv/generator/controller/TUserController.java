@@ -124,7 +124,7 @@ public class TUserController {
         for (int i = 0; i < list.size(); i++) {
             TUserEntity user=list.get(i);
             StringBuilder tempStr=new StringBuilder();
-            List<TUserFileEntity> tempList=tUserFileService.list(new QueryWrapper<TUserFileEntity>().eq("user_id",user.getId()));
+            List<TUserFileEntity> tempList=tUserFileService.list(new QueryWrapper<TUserFileEntity>().eq("user_id",user.getId()).groupBy("project_id"));
             for (int j = 0; j <tempList.size() ; j++) {
                 tempStr.append(tempList.get(j).getProjectId());
                 tempStr.append(",");
